@@ -1,46 +1,48 @@
-from flask import Flask, request, redirect, render_template, url_for
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, request, redirect, url_for, render_template
+from models import db, User
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///yourdatabase.db'
-db = SQLAlchemy(app)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
 
-# @app.route('/add_user/<username>/<email>')
-# def add_user(username, email):
-#     new_user = User(username=username, email=email)
-#     db.session.add(new_user)
-#     db.session.commit()
-#     return f"User {username} added."
-#
-# @app.route('/get_users')
-# def get_users():
-#     users = User.query.all()
-#     return str(users)
+with app.app_context():
+    db.create_all()
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and user.password == password:
+            # 로그인 성공시 처리 (예: 홈페이지로 리디렉션)
+            return redirect(url_for('home'))
+        else:
+            # 로그인 실패시 처리
+            return 'Invalid credentials'
+    return render_template('login.html')
+
+@app.route('/')
+def home():
+    return '관리자 페이지로 접속해 로그인 한 후 Flag를 획득하세요'
+
 
 @app.route('/')
 def index():
-    return render_template('login.html')
+    return render_template('index.html')
 
-@app.route('/login', methods=['POST'])
-def login():
+@app.route('/add_user', methods=['POST'])
+def add_user():
     username = request.form['username']
     password = request.form['password']
-    user = User.query.filter_by(username=username).first()
-    if user and user.password == password:
-        return redirect(url_for('homepage'))
-    return 'Invalid credentials'
+    User.add_user(username, password)
+    return redirect(url_for('index'))
 
-@app.route('/home')
-def home():
-    return render_template('index.html',
-                           message='Hello, This is home!')
-
-
-
-@app.route('/home/homepage')
-def homepage():
-    return 'Welcome to the homepage!'
-
+@app.route('/users')
+def users():
+    user_list = User.get_all_users()
+    return render_template('users.html', users=user_list)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

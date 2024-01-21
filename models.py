@@ -1,4 +1,6 @@
-from main import db
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -7,3 +9,13 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.username}>'
+
+    @staticmethod
+    def add_user(username, password):
+        new_user = User(username=username, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+
+    @staticmethod
+    def get_all_users():
+        return User.query.all()
