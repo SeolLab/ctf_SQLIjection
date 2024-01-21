@@ -21,7 +21,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         port: 22
         source: "."
-        target: "/ctf/blind_sqli"
+        target: "~/ctf/blind_sqli"
 
     - name: SSH Command
       uses: appleboy/ssh-action@master
@@ -31,4 +31,4 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         port: 22
         script: |
-          cd /ctf/blind_sqli
+          cd ~/ctf/blind_sqli
