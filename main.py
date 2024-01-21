@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, make_response
+from sqlalchemy.sql import text
 from models import db, User
-from werkzeug.security import generate_password_hash, check_password_hash
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -31,14 +31,17 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        print(f"username: {username}")
-        print(f"password: {password}")
+        # Blind SQLi Vulnerable Query
+        raw_sql = text(f"SELECT * FROM user WHERE username='{username}' and password='{password}'")
+        print(raw_sql)
 
-        user = User.query.filter_by(username=username).first()
-        if user and user.password == password:
-            # 로그인 성공시 처리 (예: 홈페이지로 리디렉션)
+        result = db.session.execute(raw_sql).fetchone()
+        print(result)
+
+        if result is not None:
+            # 로그인 성공시 처리
             print("로그인 성공")
-            session['user_id'] = user.id
+            session['user_id'] = result.id
             resp = make_response(redirect('/home'))
             resp.set_cookie('username', username)
             return resp
