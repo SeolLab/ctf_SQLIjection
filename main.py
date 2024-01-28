@@ -154,6 +154,7 @@ def flushdb():
         if user:
             # 로그인 성공
             session['user_id'] = user.id
+            session['logged_in'] = True
             session.pop('failed_attempts', None)
             session.pop('last_failed_login', None)
             resp = make_response(redirect(url_for('admin')))
@@ -177,20 +178,21 @@ def flushdb():
 
 @app.route('/board')
 def board():
-    # 게시글 데이터를 가져오는 로직
-    # 예시로, 여기서는 간단한 게시글 목록을 하드코딩합니다.
-
-    # if now_session in clear_session:
-    #     posts = [
-    #         {"title": "flag{}", "author": "", "date_posted": ""}
-    #     ]
-    # else:
-    posts = [
-        {"title": "첫 번째 게시글", "author": "홍길동", "date_posted": "2024-01-01"},
-        {"title": "두 번째 게시글", "author": "김철수", "date_posted": "2024-01-02"}
-    ]
+    # 세션에서 로그인 상태 확인
+    if session.get('logged_in'):
+        # 로그인한 사용자에게는 특별한 게시글 표시
+        posts = [
+            {"title": "flag{}", "author": "", "date_posted": ""}
+        ]
+    else:
+        # 일반 사용자에게는 기본 게시글 목록 표시
+        posts = [
+            {"title": "첫 번째 게시글", "author": "홍길동", "date_posted": "2024-01-01"},
+            {"title": "두 번째 게시글", "author": "김철수", "date_posted": "2024-01-02"}
+        ]
 
     return render_template('board.html', posts=posts)
+
 
 
 @app.route('/logout')
