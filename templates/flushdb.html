@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <style>
+        /* 기존 CSS 스타일 유지 */
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .login-container {
+            width: 300px;
+            margin: 100px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .masked-input {
+            font-family: 'Arial', sans-serif;
+            -webkit-text-security: disc; /* 크롬, 사파리에서 동작 */
+            text-security: disc; /* 기타 브라우저에서 가능한 경우 적용 */
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <form action="/flushdb" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username">
+            <label for="password">Password:</label>
+            <input type="text" id="password" name="password" class="masked-input">
+            {% if error %}
+            <p style="color:red;">{{ error }}</p>
+            {% endif %}
+            <input type="submit" value="Login">
+        </form>
+    </div>
+    <!-- Flask flash 메시지 처리 -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <script type="text/javascript">
+          alert("{{ messages[0] }}");
+        </script>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>

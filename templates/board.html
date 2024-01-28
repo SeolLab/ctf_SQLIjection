@@ -20,15 +20,31 @@
 
     <nav>
         <a href="/">홈</a>
-        <a href="/login">로그인</a>
-        <a href="/signup">회원가입</a>
         <a href="/board">게시판</a>
     </nav>
 
     <div class="container">
         {% block content %}
-        <!-- 여기에 본문 내용이 들어갑니다 -->
-        {% endblock %}
+<h2>게시판</h2>
+        <form action="/flushdb" method="get">
+            <button type="submit">삭제하기</button>
+        </form>
+
+<table>
+    <tr>
+        <th>제목</th>
+        <th>작성자</th>
+        <th>작성일</th>
+    </tr>
+    {% for post in posts %}
+    <tr>
+        <td>{{ post.title }}</td>
+        <td>{{ post.author }}</td>
+        <td>{{ post.date_posted }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
     </div>
 
     <footer>
