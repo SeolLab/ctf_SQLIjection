@@ -1,24 +1,31 @@
-from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash
-from sqlalchemy.sql import text
-from models import db, User
-import matplotlib
-matplotlib.use('Agg')
+from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash, jsonify
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
 import io
 import re
 import base64
 from datetime import datetime, timedelta
 import secrets
 import os
+from models import db, User
 
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 secret_key = secrets.token_hex(16)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+username = os.getenv('DB_USER')
+password = os.getenv('DB_PASSWORD')
+host = os.getenv('DB_HOST')
+dbname = os.getenv('DB_NAME')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://{username}:{password}@{host}/{dbname}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db.init_app(app)
+
 
 with app.app_context():
     db.create_all()
@@ -74,8 +81,13 @@ def login():
             flash("Invalid input.")
             return redirect(url_for('login'))
 
-        user = User.query.filter_by(username=username, password=password).first()
+        connection = db.engine.connect()
+        query = plt.text(f"SELECT username, password FROM user WHERE username = '{username}' AND password = '{password}'")
+        result = connection.execute(query)
+        user = result.fetchone()
+        connection.close()
 
+        print(user)
 
 
         if user:
@@ -85,6 +97,7 @@ def login():
             session.pop('last_failed_login', None)
             resp = make_response(redirect(url_for('admin')))
             resp.set_cookie('username', username)
+            print(query)
             return resp
         else:
             # 로그인 실패 처리 및 실패 횟수 업데이트
@@ -94,6 +107,7 @@ def login():
 
             if failed_attempts < 5:
                 flash(f"틀렸습니다. 다시 시도해주세요! ({failed_attempts}/5)")
+                print(query)
             else:
                 flash("로그인 시도가 너무 많습니다. 1분 후에 다시 시도해주세요")
 
