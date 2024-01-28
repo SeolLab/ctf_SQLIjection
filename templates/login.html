@@ -54,5 +54,13 @@
             <input type="submit" value="Login">
         </form>
     </div>
+    <!-- Flask flash 메시지 처리 -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <script type="text/javascript">
+          alert("{{ messages[0] }}");
+        </script>
+      {% endif %}
+    {% endwith %}
 </body>
 </html>
