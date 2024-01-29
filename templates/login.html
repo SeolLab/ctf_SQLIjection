@@ -2,30 +2,64 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>경찰청</title>
     <style>
-        /* 기존 CSS 스타일 유지 */
+        /* 기존 스타일과 새로 추가된 스타일 통합 */
         body {
             font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
         }
-        .login-container {
-            width: 300px;
-            margin: 100px auto;
+        header, footer {
+            background-color: #f1f1f1;
+            padding: 10px;
+            text-align: center;
+        }
+        nav {
+            background-color: #333;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            padding: 14px 20px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        nav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
             padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
         }
-        .masked-input {
-            font-family: 'Arial', sans-serif;
-            -webkit-text-security: disc; /* 크롬, 사파리에서 동작 */
-            text-security: disc; /* 기타 브라우저에서 가능한 경우 적용 */
+        header img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* 로그인 컨테이너 스타일 */
+        .login-container {
+            width: 350px;
+            padding: 40px;
+            background-color: #ffffff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            text-align: center;
         }
         input[type="text"], input[type="password"] {
-            width: 100%;
+            width: calc(100% - 20px);
             padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 3px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .masked-input {
+            -webkit-text-security: disc;
+            text-security: disc;
         }
         input[type="submit"] {
             width: 100%;
@@ -33,34 +67,58 @@
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 3px;
+            border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
         input[type="submit"]:hover {
             background-color: #45a049;
         }
+        .error-message {
+            color: red;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <form action="/login" method="post">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username">
-            <label for="password">Password:</label>
-            <input type="text" id="password" name="password" class="masked-input">
-            {% if error %}
-            <p style="color:red;">{{ error }}</p>
-            {% endif %}
-            <input type="submit" value="Login">
-        </form>
+    <header>
+        <img src="{{ url_for('static', filename='img/txt_kcc.png') }}" alt="Logo">
+    </header>
+
+    <nav>
+        <a href="/">홈</a>
+        <a href="/login">로그인</a>
+        <a href="/signup">회원가입</a>
+    </nav>
+
+    <div class="container">
+        <div class="login-container">
+            <h2>Login</h2>
+            <form action="/login" method="post">
+                <input type="text" id="username" name="username" placeholder="Username">
+                <input type="text" id="password" name="password" class="masked-input" placeholder="Password">
+                {% if error %}
+                <p class="error-message">{{ error }}</p>
+                {% endif %}
+                <input type="submit" value="Login">
+            </form>
+
+            <!-- 추가된 부분: 회원가입 버튼 -->
+            <p>계정이 없으신가요? <a href="/signup">회원가입</a></p>
+
+            <!-- Flask flash 메시지 처리 -->
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <script type="text/javascript">
+                  alert("{{ messages[0] }}");
+                </script>
+              {% endif %}
+            {% endwith %}
+        </div>
     </div>
-    <!-- Flask flash 메시지 처리 -->
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <script type="text/javascript">
-          alert("{{ messages[0] }}");
-        </script>
-      {% endif %}
-    {% endwith %}
+
+    <footer>
+        <p>© 2024. KOREAN NATIONAL POLICE AGENCY</p>
+    </footer>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>경찰청</title>
+    <title>회원가입</title>
     <style>
         /* 기존 스타일과 새로 추가된 스타일 통합 */
         body {
@@ -40,8 +40,8 @@
             height: auto;
         }
 
-        /* 로그인 컨테이너 스타일 */
-        .login-container {
+        /* 회원가입 컨테이너 스타일 */
+        .signup-container {
             width: 350px;
             padding: 40px;
             background-color: #ffffff;
@@ -49,17 +49,13 @@
             border-radius: 10px;
             text-align: center;
         }
-        input[type="text"], input[type="password"] {
+        input[type="text"], input[type="password"], input[type="email"] {
             width: calc(100% - 20px);
             padding: 10px;
             margin-bottom: 20px;
             border: 1px solid #ddd;
             border-radius: 5px;
             box-sizing: border-box;
-        }
-        .masked-input {
-            -webkit-text-security: disc;
-            text-security: disc;
         }
         input[type="submit"] {
             width: 100%;
@@ -89,28 +85,22 @@
         <a href="/">홈</a>
         <a href="/login">로그인</a>
         <a href="/signup">회원가입</a>
-        <a href="/board">게시판</a>
     </nav>
 
     <div class="container">
-        <div class="login-container">
-            <h2>Login</h2>
-            <form action="/login" method="post">
-                <input type="text" id="username" name="username" placeholder="Username">
-                <input type="text" id="password" name="password" class="masked-input" placeholder="Password">
+        <div class="signup-container">
+            <h2>회원가입</h2>
+            <form action="/signup" method="post">
+                <input type="text" id="username" name="username" placeholder="사용자 이름" required>
+                <input type="text" id="userID" name="userID" placeholder="아이디" required>
+                <input type="password" id="password" name="password" placeholder="비밀번호" required>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="비밀번호 재입력" required>
+                <input type="email" id="email" name="email" placeholder="이메일" required>
                 {% if error %}
                 <p class="error-message">{{ error }}</p>
                 {% endif %}
-                <input type="submit" value="Login">
+                <input type="submit" value="회원가입">
             </form>
-            <!-- Flask flash 메시지 처리 -->
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <script type="text/javascript">
-                  alert("{{ messages[0] }}");
-                </script>
-              {% endif %}
-            {% endwith %}
         </div>
     </div>
 

@@ -36,11 +36,11 @@ def init_db():
         db.create_all()
 
         # 데이터베이스에서 동일한 username과 password를 가진 사용자 찾기
-        existing_user = User.query.filter_by(username='관리자', password='비오비').first()
+        existing_user = User.query.filter_by(username='관리자', password='경찰청피싱').first()
 
         # 사용자가 존재하지 않는 경우에만 새로운 사용자 추가
         if existing_user is None:
-            admin = User(username='관리자', password='비오비')
+            admin = User(username='관리자', password='경찰청피싱')
             db.session.add(admin)
             db.session.commit()
 
@@ -133,7 +133,7 @@ def flushdb():
 
             if failed_attempts >= 5 and time_since_last_fail < timedelta(minutes=1):
                 flash("로그인 시도가 너무 많습니다. 1분 후에 다시 시도해주세요.")
-                return redirect(url_for('login'))
+                return redirect(url_for('flushdb'))
 
             # 1분이 지나면 실패 횟수 초기화
             if time_since_last_fail >= timedelta(minutes=1):
@@ -145,7 +145,7 @@ def flushdb():
 
         if input_filter(username) or input_filter(password):
             flash("Invalid input.")
-            return redirect(url_for('login'))
+            return redirect(url_for('flushdb'))
 
         user = User.query.filter_by(username=username, password=password).first()
 
@@ -157,7 +157,7 @@ def flushdb():
             session['logged_in'] = True
             session.pop('failed_attempts', None)
             session.pop('last_failed_login', None)
-            resp = make_response(redirect(url_for('admin')))
+            resp = make_response(redirect(url_for('board')))
             resp.set_cookie('username', username)
             return resp
         else:
@@ -171,7 +171,7 @@ def flushdb():
             else:
                 flash("로그인 시도가 너무 많습니다. 1분 후에 다시 시도해주세요")
 
-            return redirect(url_for('login'))
+            return redirect(url_for('flushdb'))
 
     return render_template('flushdb.html')
 
@@ -182,14 +182,24 @@ def board():
     if session.get('logged_in'):
         # 로그인한 사용자에게는 특별한 게시글 표시
         posts = [
-            {"title": "flag{}", "author": "", "date_posted": ""}
+            {"title": "BoB12_1STAR{I_FINALLY_DEFEATED_THE_BLACK_HACKERS}",  "subject": "N/A", "phone":"N/A", "character":"N/A", "date_posted": "N/A"}
         ]
-    else:
+    elif session.get('user_id'):
         # 일반 사용자에게는 기본 게시글 목록 표시
         posts = [
-            {"title": "첫 번째 게시글", "author": "홍길동", "date_posted": "2024-01-01"},
-            {"title": "두 번째 게시글", "author": "김철수", "date_posted": "2024-01-02"}
+            {"title": "보안컨설팅 경연단계 진출자 개인정보1", "subject": "김재윤", "phone":"010-0000-0000", "character":"개보법 마스터", "date_posted": "2024-01-01"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보2", "subject": "박윤진", "phone":"010-0000-0000", "character":"디자인 마스터", "date_posted": "2024-01-02"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보3", "subject": "신윤제", "phone":"010-0000-0000", "character":"자동차 마스터", "date_posted": "2024-01-02"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보4", "subject": "설기현", "phone":"010-4445-7736", "character":"마스터키", "date_posted": "2024-01-02"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보5", "subject": "이선민", "phone":"010-0000-0000", "character":"비주얼 마스터", "date_posted": "2024-01-02"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보6", "subject": "이유경", "phone":"010-0000-0000", "character":"웹해킹 마스터", "date_posted": "2024-01-02"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보7", "subject": "임홍록", "phone":"010-0000-0000", "character":"관리를 가장한 기술 마스터", "date_posted": "2024-01-02"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보8", "subject": "최원겸", "phone":"010-0000-0000", "character":"모든게 마스터", "date_posted": "2024-01-02"}
         ]
+    else:
+        # 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+        flash("로그인이 필요합니다.")
+        return redirect(url_for('login'))
 
     return render_template('board.html', posts=posts)
 
@@ -238,10 +248,6 @@ def add_user():
     return redirect(url_for('index'))
 
 
-@app.route('/users')
-def users():
-    user_list = User.get_all_users()
-    return render_template('users.html', users=user_list)
 
 
 if __name__ == '__main__':
