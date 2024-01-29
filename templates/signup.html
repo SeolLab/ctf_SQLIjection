@@ -75,6 +75,22 @@
             margin-bottom: 20px;
         }
     </style>
+        <!-- 비밀번호 검증을 위한 JavaScript -->
+    <script type="text/javascript">
+        function checkPassword() {
+            var password = document.getElementById("password").value;
+            var confirmPassword = document.getElementById("confirmPassword").value;
+            var message = document.getElementById("passwordMessage");
+
+            if (password != confirmPassword) {
+                message.style.color = "red";
+                message.innerHTML = "비밀번호가 일치하지 않습니다.";
+            } else {
+                message.style.color = "green";
+                message.innerHTML = "비밀번호가 일치합니다.";
+            }
+        }
+    </script>
 </head>
 <body>
     <header>
@@ -91,21 +107,59 @@
         <div class="signup-container">
             <h2>회원가입</h2>
             <form action="/signup" method="post">
-                <input type="text" id="username" name="username" placeholder="사용자 이름" required>
-                <input type="text" id="userID" name="userID" placeholder="아이디" required>
-                <input type="password" id="password" name="password" placeholder="비밀번호" required>
-                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="비밀번호 재입력" required>
-                <input type="email" id="email" name="email" placeholder="이메일" required>
+                <input type="text" id="name" name="name" placeholder="사용자 이름" required>
+                <input type="text" id="username" name="username" placeholder="아이디" required><button type="button" onclick="checkUsername()">🔍아이디 중복검사</button><p id="usernameCheckResult"></p>
+                <input type="password" id="password" name="password" placeholder="비밀번호" required onkeyup="checkPassword()">
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="비밀번호 재입력" required onkeyup="checkPassword()">
+                <!-- 비밀번호 확인 메시지 -->
+                <p id="passwordMessage"></p>
+                <!-- 회원가입 폼 내부 -->
+                <input type="text" id="birthdate" name="birthdate" placeholder="생년월일 (예: 2001.04.02)" required pattern="\d{4}\.\d{2}\.\d{2}" title="생년월일 형식: YYYY.MM.DD">
+                <input type="email" id="email" name="email" placeholder="이메일" required pattern=".+@(?:[a-zA-Z0-9-]+\.)+(com|net|org)$" title="유효한 이메일 확장자: .com, .net, .org">
+
                 {% if error %}
                 <p class="error-message">{{ error }}</p>
                 {% endif %}
+
+
+                <!-- reCAPTCHA 위젯 -->
+                <div class="g-recaptcha" data-sitekey="여기에_사이트_키"></div>
+
                 <input type="submit" value="회원가입">
             </form>
+            <!-- reCAPTCHA 스크립트 -->
+            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
         </div>
     </div>
 
     <footer>
         <p>© 2024. KOREAN NATIONAL POLICE AGENCY</p>
     </footer>
+    <script type="text/javascript">
+    function checkUsername() {
+        var username = document.getElementById('username').value;
+        var resultElement = document.getElementById('usernameCheckResult');
+
+        fetch('/check-username', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({username: username})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+                resultElement.innerHTML = "이미 존재하는 아이디입니다.";
+            } else {
+                resultElement.innerHTML = "사용 가능한 아이디입니다.";
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+
 </body>
 </html>

@@ -9,6 +9,9 @@ import secrets
 import os
 from models import db, User
 from sqlalchemy import text
+import requests
+
+
 
 load_dotenv()
 
@@ -31,6 +34,8 @@ with app.app_context():
     db.create_all()
 
 
+
+
 def init_db():
     with app.app_context():
         db.create_all()
@@ -45,6 +50,8 @@ def init_db():
             db.session.commit()
 
 
+
+
 def input_filter(input_value):
     # 정규 표현식을 사용하여 입력값 필터링
     patterns = [r'\.\.\/|\.\./', r'(and|or|not)\s+']
@@ -52,7 +59,6 @@ def input_filter(input_value):
         if re.search(pattern, input_value, re.I):
             return True
     return False
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -96,15 +102,14 @@ def login():
         print(user)
 
         if user:
-            # 로그인 성공
             session['user_id'] = user.id
             session.pop('failed_attempts', None)
             session.pop('last_failed_login', None)
-            resp = make_response(redirect(url_for('admin')))
+            resp = make_response(redirect(url_for('admin' if username == '관리자' else 'user')))
             resp.set_cookie('username', username)
-            print(query)
             return resp
         else:
+
             # 로그인 실패 처리 및 실패 횟수 업데이트
             failed_attempts += 1
             session['failed_attempts'] = failed_attempts
@@ -119,6 +124,22 @@ def login():
             return redirect(url_for('login'))
 
     return render_template('login.html')
+
+
+
+
+
+# 사용자 페이지 라우트
+@app.route('/user')
+def user():
+    if session.get('user_id'):
+        # 사용자 페이지 관련 로직 (예: 사용자 정보 표시)
+        return render_template('user.html')
+    else:
+        # 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+        flash("로그인이 필요합니다.")
+        return redirect(url_for('login'))
+
 
 
 @app.route('/flushdb', methods=['GET', 'POST'])
@@ -176,6 +197,10 @@ def flushdb():
     return render_template('flushdb.html')
 
 
+
+
+
+
 @app.route('/board')
 def board():
     # 세션에서 로그인 상태 확인
@@ -187,14 +212,14 @@ def board():
     elif session.get('user_id'):
         # 일반 사용자에게는 기본 게시글 목록 표시
         posts = [
-            {"title": "보안컨설팅 경연단계 진출자 개인정보1", "subject": "김재윤", "phone":"010-0000-0000", "character":"개보법 마스터", "date_posted": "2024-01-01"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보2", "subject": "박윤진", "phone":"010-0000-0000", "character":"디자인 마스터", "date_posted": "2024-01-02"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보3", "subject": "신윤제", "phone":"010-0000-0000", "character":"자동차 마스터", "date_posted": "2024-01-02"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보4", "subject": "설기현", "phone":"010-4445-7736", "character":"마스터키", "date_posted": "2024-01-02"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보5", "subject": "이선민", "phone":"010-0000-0000", "character":"비주얼 마스터", "date_posted": "2024-01-02"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보6", "subject": "이유경", "phone":"010-0000-0000", "character":"웹해킹 마스터", "date_posted": "2024-01-02"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보7", "subject": "임홍록", "phone":"010-0000-0000", "character":"관리를 가장한 기술 마스터", "date_posted": "2024-01-02"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보8", "subject": "최원겸", "phone":"010-0000-0000", "character":"모든게 마스터", "date_posted": "2024-01-02"}
+            {"title": "보안컨설팅 경연단계 진출자 개인정보1", "subject": "김재윤", "phone":"010-0000-0000", "character":"개보법 마스터", "date_posted": "2024-01-11"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보2", "subject": "박윤진", "phone":"010-0000-0000", "character":"디자인 마스터", "date_posted": "2024-01-12"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보3", "subject": "신윤제", "phone":"010-0000-0000", "character":"자동차 마스터", "date_posted": "2024-01-22"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보4", "subject": "설기현", "phone":"010-4445-7736", "character":"마스터키 설", "date_posted": "2024-01-12"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보5", "subject": "이선민", "phone":"010-0000-0000", "character":"비주얼 마스터", "date_posted": "2024-01-31"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보6", "subject": "이유경", "phone":"010-0000-0000", "character":"웹해킹 마스터", "date_posted": "2024-01-23"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보7", "subject": "임홍록", "phone":"010-0000-0000", "character":"관리를 가장한 기술 마스터", "date_posted": "2024-01-22"},
+            {"title": "보안컨설팅 경연단계 진출자 개인정보8", "subject": "최원겸", "phone":"010-0000-0000", "character":"모든게 마스터", "date_posted": "2024-01-13"}
         ]
     else:
         # 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
@@ -203,6 +228,53 @@ def board():
 
     return render_template('board.html', posts=posts)
 
+
+
+
+
+
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        # 기존 회원가입 로직
+
+        # # reCAPTCHA 검증
+        # recaptcha_response = request.form['g-recaptcha-response']
+        # secret_key = '1234'  ## 비밀키
+        # captcha_payload = {
+        #     'secret': secret_key,
+        #     'response': recaptcha_response
+        # }
+        # r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=captcha_payload)
+        # captcha_result = r.json()
+        #
+        # if not captcha_result['success']:
+        #     # reCAPTCHA 검증 실패 처리
+        #     flash("캡차 인증에 실패했습니다. 다시 시도해주세요.")
+        #     return redirect(url_for('signup'))
+        #
+        # # reCAPTCHA 검증 성공 시 나머지 로직 처리
+
+        username = request.form['username']
+        password = request.form['password']
+        # 새로운 사용자 인스턴스 생성
+        new_user = User(username=username, password=password)
+        # 데이터베이스에 사용자 추가
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('login'))
+    return render_template('signup.html')
+
+
+from flask import jsonify
+@app.route('/check-username', methods=['POST'])
+def check_username():
+    data = request.get_json()
+    username = data['username']
+    existing_user = User.query.filter_by(username=username).first()
+
+    return jsonify({'exists': existing_user is not None})
 
 
 @app.route('/logout')
@@ -235,9 +307,14 @@ def admin():
         return redirect(url_for('login'))
 
 
+
+
+
 @app.route('/')
 def home():
     return render_template('index.html')
+
+
 
 
 @app.route('/add_user', methods=['POST'])
@@ -246,6 +323,8 @@ def add_user():
     password = request.form['password']
     User.add_user(username, password)
     return redirect(url_for('index'))
+
+
 
 
 
