@@ -30,14 +30,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
-with app.app_context():
-    db.create_all()
-
-
-
 
 def init_db():
     with app.app_context():
+        db.drop_all()
         db.create_all()
 
         # 데이터베이스에서 동일한 username과 password를 가진 사용자 찾기
