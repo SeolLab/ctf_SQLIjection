@@ -101,7 +101,8 @@ def login():
             session['user_id'] = user.id
             session.pop('failed_attempts', None)
             session.pop('last_failed_login', None)
-            resp = make_response(redirect(url_for('admin' if username == '관리자' else 'user')))
+            # resp = make_response(redirect(url_for('admin')))
+            resp = make_response(redirect(url_for('admin' if username == '관리자' else 'user')))    ## resp = make_response(redirect(url_for('admin')))
             resp.set_cookie('username', username)
             return resp
         else:
