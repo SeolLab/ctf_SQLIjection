@@ -152,7 +152,6 @@ def flushdb():
                 flash("로그인 시도가 너무 많습니다. 1분 후에 다시 시도해주세요.")
                 return redirect(url_for('flushdb'))
 
-            # 1분이 지나면 실패 횟수 초기화
             if time_since_last_fail >= timedelta(minutes=1):
                 session['failed_attempts'] = 0
                 failed_attempts = 0
@@ -164,13 +163,12 @@ def flushdb():
             flash("Invalid input.")
             return redirect(url_for('flushdb'))
 
-        user = User.query.filter_by(username=username, password=password).first()
+        # '관리자' 사용자의 정보를 가져옴
+        admin_user = User.query.filter_by(username='관리자').first()
 
-        print(user)
-
-        if user:
+        if admin_user and username == admin_user.username and password == admin_user.password:
             # 로그인 성공
-            session['user_id'] = user.id
+            session['user_id'] = admin_user.id
             session['logged_in'] = True
             session.pop('failed_attempts', None)
             session.pop('last_failed_login', None)
