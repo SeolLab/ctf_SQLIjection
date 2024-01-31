@@ -267,6 +267,9 @@ def flushdb():
 
 @app.route('/board')
 def board():
+    # '관리자' 사용자의 정보를 가져옴
+    admin_user = User.query.filter_by(username='관리자').first()
+
     # 세션에서 로그인 상태 확인
     if session.get('logged_in'):
         # 로그인한 사용자에게는 특별한 게시글 표시
@@ -275,7 +278,7 @@ def board():
         ]
     elif session.get('user_id'):
         # 일반 사용자에게는 기본 게시글 목록 표시
-        if session['user_id'] == '관리자':
+        if session['user_id'] == admin_user.id:
             posts = [
                 {"title": "보안컨설팅 경연단계 진출자 개인정보1", "subject": "김재윤", "phone":"010-0000-0000", "character":"개보법 마스터", "date_posted": "2024-01-11"},
                 {"title": "보안컨설팅 경연단계 진출자 개인정보2", "subject": "박윤진", "phone":"010-0000-0000", "character":"디자인 마스터", "date_posted": "2024-01-12"},
