@@ -9,7 +9,6 @@ import secrets
 import os
 from models import db, User
 from sqlalchemy import text
-import requests
 
 
 
@@ -56,6 +55,80 @@ def input_filter(input_value):
             return True
     return False
 
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if request.method == 'POST':
+#         last_failed_login = session.get('last_failed_login')
+#         failed_attempts = session.get('failed_attempts', 0)
+#
+#         if last_failed_login:
+#             last_failed_login = datetime.strptime(last_failed_login, "%Y-%m-%d %H:%M:%S")
+#             time_since_last_fail = datetime.now() - last_failed_login
+#
+#
+#
+#             if failed_attempts >= 5 and time_since_last_fail < timedelta(minutes=1):
+#                 flash("로그인 시도가 너무 많습니다. 1분 후에 다시 시도해주세요.")
+#                 return redirect(url_for('login'))
+#
+#             # 1분이 지나면 실패 횟수 초기화
+#             if time_since_last_fail >= timedelta(minutes=1):
+#                 session['failed_attempts'] = 0
+#                 failed_attempts = 0
+#
+#
+#
+#         username = request.form['username']
+#         password = request.form['password']
+#
+#         if input_filter(username) or input_filter(password):
+#             flash("Invalid input. and, or, not, . 문자를 사용할 수 없습니다.")
+#             return redirect(url_for('login'))
+#
+#         # Prepare the SQL query using `text`
+#         query = text(f"SELECT * FROM user WHERE username = '{username}' AND password = '{password}'")
+#
+#         # Obtain a connection from the engine
+#         connection = db.engine.connect()
+#
+#         # Execute the query using the connection, passing parameters as a dictionary
+#         result = connection.execute(query)
+#         user = result.fetchone()
+#
+#         # Close the connection
+#         connection.close()
+#
+#         print(user)
+#
+#         if user:
+#             session['user_id'] = user.id
+#             session.pop('failed_attempts', None)
+#             session.pop('last_failed_login', None)
+#             # resp = make_response(redirect(url_for('admin')))
+#             resp = make_response(redirect(url_for('admin' if username == '관리자' else 'user')))    ## resp = make_response(redirect(url_for('admin')))
+#             resp.set_cookie('username', username)
+#             return resp
+#         else:
+#
+#             # 로그인 실패 처리 및 실패 횟수 업데이트
+#             failed_attempts += 1
+#             session['failed_attempts'] = failed_attempts
+#             session['last_failed_login'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#
+#             if failed_attempts < 5:
+#                 flash(f"틀렸습니다. 다시 시도해주세요! ({failed_attempts}/5)")
+#                 print(query)
+#             else:
+#                 flash("로그인 시도가 너무 많습니다. 1분 후에 다시 시도해주세요")
+#
+#             return redirect(url_for('login'))
+#
+#     return render_template('login.html')
+
+
+
+
+# 힌트 버전
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -68,9 +141,9 @@ def login():
 
             if failed_attempts >= 5 and time_since_last_fail < timedelta(minutes=1):
                 flash("로그인 시도가 너무 많습니다. 1분 후에 다시 시도해주세요.")
-                return redirect(url_for('login'))
+                # 로그인 시도가 5회 초과하고 1분 미만일 때, lockout 상태를 True로 설정하여 경고 메시지를 표시합니다.
+                return render_template('login.html', lockout=True)
 
-            # 1분이 지나면 실패 횟수 초기화
             if time_since_last_fail >= timedelta(minutes=1):
                 session['failed_attempts'] = 0
                 failed_attempts = 0
@@ -79,48 +152,44 @@ def login():
         password = request.form['password']
 
         if input_filter(username) or input_filter(password):
-            flash("Invalid input.")
+            flash("Invalid input. and, or, not, . 문자를 사용할 수 없습니다.")
             return redirect(url_for('login'))
 
         # Prepare the SQL query using `text`
         query = text(f"SELECT * FROM user WHERE username = '{username}' AND password = '{password}'")
-
         # Obtain a connection from the engine
         connection = db.engine.connect()
-
         # Execute the query using the connection, passing parameters as a dictionary
         result = connection.execute(query)
         user = result.fetchone()
-
         # Close the connection
         connection.close()
-
         print(user)
 
         if user:
             session['user_id'] = user.id
             session.pop('failed_attempts', None)
             session.pop('last_failed_login', None)
-            # resp = make_response(redirect(url_for('admin')))
-            resp = make_response(redirect(url_for('admin' if username == '관리자' else 'user')))    ## resp = make_response(redirect(url_for('admin')))
+            resp = make_response(redirect(url_for('admin' if username == '관리자' else 'user')))
             resp.set_cookie('username', username)
             return resp
         else:
-
-            # 로그인 실패 처리 및 실패 횟수 업데이트
             failed_attempts += 1
             session['failed_attempts'] = failed_attempts
             session['last_failed_login'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-            if failed_attempts < 5:
-                flash(f"틀렸습니다. 다시 시도해주세요! ({failed_attempts}/5)")
-                print(query)
-            else:
+            if failed_attempts >= 5:
+                # 로그인 시도가 5회 실패한 경우 lockout 상태를 True로 설정하지만, 여기서는 메시지를 flash하고 리다이렉트합니다.
                 flash("로그인 시도가 너무 많습니다. 1분 후에 다시 시도해주세요")
+                return redirect(url_for('login'))
+
+            flash(f"틀렸습니다. 다시 시도해주세요! ({failed_attempts}/5)")
 
             return redirect(url_for('login'))
 
-    return render_template('login.html')
+    # GET 요청 또는 로그인 실패 후 lockout 상태가 아닌 경우
+    return render_template('login.html', lockout=False)
+
 
 
 
@@ -161,7 +230,7 @@ def flushdb():
         password = request.form['password']
 
         if input_filter(username) or input_filter(password):
-            flash("Invalid input.")
+            flash("Invalid input. and, or, not, . 문자를 사용할 수 없습니다.")
             return redirect(url_for('flushdb'))
 
         # '관리자' 사용자의 정보를 가져옴
@@ -206,16 +275,21 @@ def board():
         ]
     elif session.get('user_id'):
         # 일반 사용자에게는 기본 게시글 목록 표시
-        posts = [
-            {"title": "보안컨설팅 경연단계 진출자 개인정보1", "subject": "김재윤", "phone":"010-0000-0000", "character":"개보법 마스터", "date_posted": "2024-01-11"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보2", "subject": "박윤진", "phone":"010-0000-0000", "character":"디자인 마스터", "date_posted": "2024-01-12"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보3", "subject": "신윤제", "phone":"010-0000-0000", "character":"자동차 마스터", "date_posted": "2024-01-22"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보4", "subject": "설기현", "phone":"010-4445-7736", "character":"마스터키 설", "date_posted": "2024-01-12"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보5", "subject": "이선민", "phone":"010-0000-0000", "character":"비주얼 마스터", "date_posted": "2024-01-31"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보6", "subject": "이유경", "phone":"010-0000-0000", "character":"웹해킹 마스터", "date_posted": "2024-01-23"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보7", "subject": "임홍록", "phone":"010-0000-0000", "character":"관리를 가장한 기술 마스터", "date_posted": "2024-01-22"},
-            {"title": "보안컨설팅 경연단계 진출자 개인정보8", "subject": "최원겸", "phone":"010-0000-0000", "character":"모든게 마스터", "date_posted": "2024-01-13"}
-        ]
+        if session['user_id'] == '관리자':
+            posts = [
+                {"title": "보안컨설팅 경연단계 진출자 개인정보1", "subject": "김재윤", "phone":"010-0000-0000", "character":"개보법 마스터", "date_posted": "2024-01-11"},
+                {"title": "보안컨설팅 경연단계 진출자 개인정보2", "subject": "박윤진", "phone":"010-0000-0000", "character":"디자인 마스터", "date_posted": "2024-01-12"},
+                {"title": "보안컨설팅 경연단계 진출자 개인정보3", "subject": "신윤제", "phone":"010-0000-0000", "character":"자동차 마스터", "date_posted": "2024-01-22"},
+                {"title": "보안컨설팅 경연단계 진출자 개인정보4", "subject": "설기현", "phone":"010-4445-7736", "character":"마스터키 설", "date_posted": "2024-01-12"},
+                {"title": "보안컨설팅 경연단계 진출자 개인정보5", "subject": "이선민", "phone":"010-0000-0000", "character":"비주얼 마스터", "date_posted": "2024-01-31"},
+                {"title": "보안컨설팅 경연단계 진출자 개인정보6", "subject": "이유경", "phone":"010-0000-0000", "character":"웹해킹 마스터", "date_posted": "2024-01-23"},
+                {"title": "보안컨설팅 경연단계 진출자 개인정보7", "subject": "임홍록", "phone":"010-0000-0000", "character":"관리를 가장한 기술 마스터", "date_posted": "2024-01-22"},
+                {"title": "보안컨설팅 경연단계 진출자 개인정보8", "subject": "최원겸", "phone":"010-0000-0000", "character":"모든게 마스터", "date_posted": "2024-01-13"}
+            ]
+        else:
+            # 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+            flash("로그인이 필요합니다.")
+            return redirect(url_for('login'))
     else:
         # 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
         flash("로그인이 필요합니다.")
@@ -310,17 +384,12 @@ def home():
     return render_template('index.html')
 
 
-
-
 @app.route('/add_user', methods=['POST'])
 def add_user():
     username = request.form['username']
     password = request.form['password']
     User.add_user(username, password)
     return redirect(url_for('index'))
-
-
-
 
 
 
