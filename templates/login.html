@@ -97,11 +97,13 @@
             <form action="/login" method="post">
                 <input type="text" id="username" name="username" placeholder="Username">
                 <input type="text" id="password" name="password" class="masked-input" placeholder="Password">
+                <!--password는 영어, 숫자, 한글을 포함할 수 있다.-->
                 {% if error %}
                 <p class="error-message">{{ error }}</p>
                 {% endif %}
                 <input type="submit" value="Login">
                 <!--SELECT * FROM user WHERE username = '{username}' AND password = '{password}'-->
+                <!--관리자계정 username: "관리자"-->
 
 
                 {% if lockout %}
