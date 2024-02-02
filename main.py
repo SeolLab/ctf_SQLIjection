@@ -170,7 +170,7 @@ def login():
             session['user_id'] = user.id
             session.pop('failed_attempts', None)
             session.pop('last_failed_login', None)
-            resp = make_response(redirect(url_for('admin' if username == '관리자' else 'user')))
+            resp = make_response(redirect(url_for('admin' if user.username == '관리자' else 'user')))
             resp.set_cookie('username', username)
             return resp
         else:
@@ -336,14 +336,14 @@ def signup():
     return render_template('signup.html')
 
 
-from flask import jsonify
-@app.route('/check-username', methods=['POST'])
-def check_username():
-    data = request.get_json()
-    username = data['username']
-    existing_user = User.query.filter_by(username=username).first()
-
-    return jsonify({'exists': existing_user is not None})
+# from flask import jsonify
+# @app.route('/check-username', methods=['POST'])
+# def check_username():
+#     data = request.get_json()
+#     username = data['username']
+#     existing_user = User.query.filter_by(username=username).first()
+#
+#     return jsonify({'exists': existing_user is not None})
 
 
 @app.route('/logout')
@@ -384,12 +384,12 @@ def home():
     return render_template('index.html')
 
 
-@app.route('/add_user', methods=['POST'])
-def add_user():
-    username = request.form['username']
-    password = request.form['password']
-    User.add_user(username, password)
-    return redirect(url_for('index'))
+# @app.route('/add_user', methods=['POST'])
+# def add_user():
+#     username = request.form['username']
+#     password = request.form['password']
+#     User.add_user(username, password)
+#     return redirect(url_for('index'))
 
 
 
