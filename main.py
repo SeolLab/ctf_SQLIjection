@@ -179,7 +179,7 @@ def login():
             session['last_failed_login'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
             if failed_attempts >= 5:
-                # 로그인 시도가 5회 실패한 경우 lockout 상태를 True로 설정하지만, 여기서는 메시지를 flash하고 리다이렉트합니다.
+                # 로그인 시도가 5회 실패한 경우 lockout 상태를 True로 설정하지만, 여기서는 메시지를 flash하고 리다이렉트
                 flash("로그인 시도가 너무 많습니다. 1분 후에 다시 시도해주세요")
                 return redirect(url_for('login'))
 
@@ -189,9 +189,6 @@ def login():
 
     # GET 요청 또는 로그인 실패 후 lockout 상태가 아닌 경우
     return render_template('login.html', lockout=False)
-
-
-
 
 
 
